@@ -1,7 +1,7 @@
 package errors
 
 import (
-	oerrors "errors"
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,15 +10,15 @@ import (
 func TestNew(t *testing.T) {
 	err := New("test")
 	assert.NotNil(t, err)
-	assert.Equal(t, `["test"]`, err.Error())
+	assert.Equal(t, `test`, err.Error())
 
-	err = New("test %v", 2)
+	err = Newf("test %v", 2)
 	assert.NotNil(t, err)
-	assert.Equal(t, `["test 2"]`, err.Error())
+	assert.Equal(t, `test 2`, err.Error())
 }
 
 func TestIs(t *testing.T) {
-	err := oerrors.New("test")
+	err := errors.New("test")
 	assert.True(t, Is(err, err))
 
 	err2 := Wrap(err, "wrap")

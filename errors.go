@@ -11,16 +11,22 @@ type Error struct {
 	Err error
 }
 
-func New(msg string, args ...any) *Error {
+func New(msg string) *Error {
 	return &Error{
-		fmt.Errorf(msg, args...),
+		Err: errors.New(msg),
+	}
+}
+
+func Newf(msg string, args ...any) *Error {
+	return &Error{
+		Err: fmt.Errorf(msg, args...),
 	}
 }
 
 func Wrap(err error, msg string, args ...any) *Error {
 	if err == nil {
 		return &Error{
-			fmt.Errorf(msg, args...),
+			Err: fmt.Errorf(msg, args...),
 		}
 	}
 
@@ -29,7 +35,7 @@ func Wrap(err error, msg string, args ...any) *Error {
 	}
 
 	return &Error{
-		errors.Join(fmt.Errorf(msg, args...), err),
+		Err: errors.Join(fmt.Errorf(msg, args...), err),
 	}
 }
 
@@ -42,11 +48,16 @@ func Unwrap(err error) error {
 
 func Join(errs ...error) error {
 	return &Error{
-		errors.Join(errs...),
+		Err: errors.Join(errs...),
 	}
 }
 
 func Is(err, target error) bool {
+	// If the source error is formatted, unwrap to the parent
+	if e := Unformatted(err); e != nil {
+		err = e
+	}
+
 	if e, ok := err.(*Error); ok {
 		err = e.Err
 	}
@@ -56,6 +67,14 @@ func Is(err, target error) bool {
 	}
 
 	return errors.Is(err, target)
+}
+
+// Unformatted - If this is formatted, return the unformatted parent error.
+func Unformatted(err error) *Error {
+	if e, ok := err.(*Formatted); ok {
+		return e.parent
+	}
+	return nil
 }
 
 func As(err error, target any) bool {
