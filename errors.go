@@ -23,7 +23,23 @@ func Newf(msg string, args ...any) *Error {
 	}
 }
 
-func Wrap(err error, msg string, args ...any) *Error {
+func Wrap(err error, msg string) *Error {
+	if err == nil {
+		return &Error{
+			Err: fmt.Errorf(msg),
+		}
+	}
+
+	if e, ok := err.(*Error); ok {
+		err = e.Err
+	}
+
+	return &Error{
+		Err: errors.Join(fmt.Errorf(msg), err),
+	}
+}
+
+func Wrapf(err error, msg string, args ...any) *Error {
 	if err == nil {
 		return &Error{
 			Err: fmt.Errorf(msg, args...),
