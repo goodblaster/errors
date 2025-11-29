@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"unsafe"
 )
 
 type Error struct {
@@ -107,4 +108,18 @@ func (e Error) Error() string {
 func (e Error) MarshalJSON() ([]byte, error) {
 	strs := strings.Split(e.Error(), "\n")
 	return json.Marshal(strs)
+}
+
+type iface struct {
+	tab  unsafe.Pointer
+	data unsafe.Pointer
+}
+
+func IsNil(err error) bool {
+	if err == nil {
+		return true
+	}
+
+	i := *(*iface)(unsafe.Pointer(&err))
+	return i.data == nil
 }
